@@ -1,0 +1,38 @@
+jobs:
+    setup-shopware:
+        name: Setup Shopware
+        runs-on: ubuntu-latest
+
+        strategy:
+            matrix:
+                versions:
+                    versions:
+                        -   shopware: '5.2'
+                            php: '5.6'
+                            mysql: '5.7'
+                            consentManager: '5.2.11-5.2.27'
+
+                        -   shopware: '5.3'
+                            php: '5.6'
+                            mysql: '5.7'
+                            consentManager: '5.3.5-5.3.7'
+
+                        -   shopware: '5.4'
+                            php: '5.6'
+                            mysql: '5.7'
+                            consentManager: '5.4.6'
+
+                        -   shopware: '5.5'
+                            php: '7.1'
+                            mysql: '5.7'
+                            consentManager: '5.5.0-5.5.10'
+
+                        -   shopware: '5.6'
+                            php: '7.2'
+                            mysql: '5.7'
+                            consentManager: 'none'
+
+                        -   shopware: '5.7'
+                            php: '8.2'
+                            mysql: '8.0'
+                            consentManager: 'none'
