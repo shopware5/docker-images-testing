@@ -11,6 +11,7 @@ running\:%:
 	docker build --progress=plain \
 		-t "${CI_REGISTRY_IMAGE}/$@" \
 		-f ./running/Dockerfile ./running/
+		--progress=plain
 
 install\:%:
 	node "twig.js" Dockerfile.twig "{\"imageName\": \"$@\"}" > Dockerfile

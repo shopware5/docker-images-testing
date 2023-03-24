@@ -31,11 +31,6 @@ ENV DB_PASSWORD=root
 ENV SW_HOST=localhost
 ENV SW_BASE_PATH=
 
-RUN mysqld --user=root
-
-RUN mysqld --user=root status
-RUN mysql -uroot -h 127.0.0.1 --port 3306 -e "SELECT version();"
-
 {% if shopwareVersion < 5.7 %}
     RUN sed -e "s/%db\.user%/${DB_USER}/g" -e "s/%db\.password%/${DB_PASSWORD}/g" -e "s/%db\.database%/${DB_NAME}/g" -e "s/%db\.host%/${DB_HOST}/g" -e "s/%db\.port%/${DB_PORT}/g" < config.php.dist > config.php
     RUN php bin/console sw:database:setup --steps=drop,create,import,importDemodata
@@ -47,7 +42,7 @@ RUN mysql -uroot -h 127.0.0.1 --port 3306 -e "SELECT version();"
     RUN php bin/console sw:admin:create --name="Demo" --email="demo@demo.de" --username="demo" --password="demo" --locale="de_DE" -n
     RUN touch recovery/install/data/install.lock
 {% else %}
-    RUN make init
+    RUN /bin/bash -c "/usr/bin/mysqld_safe --skip-grant-tables &" && make init
 {% endif %}
 
 {% if consentManagerVersion %}
