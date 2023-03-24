@@ -36,3 +36,14 @@ jobs:
                             php: '8.2'
                             mysql: '8.0'
                             consentManager: 'none'
+
+    steps:
+        -   uses: actions/setup-node@v3
+            with:
+                node-version: latest
+
+        -   run: \
+                npm install
+                make running:Shopware-${ matrix.versions.shopware }-${ matrix.versions.mysql }-${ matrix.versions.php }
+                make install:Shopware-${ matrix.versions.shopware }-${ matrix.versions.mysql }-${ matrix.versions.php }-${ matrix.versions.consentManager }
+

@@ -1,0 +1,57 @@
+{% set shopwareVersion = imageName|split('-')[1] %}
+{% set mysqlVersion = imageName|split('-')[2] %}
+{% set phpVersion = imageName|split('-')[3] %}
+{% set consentManagerVersion = imageName|split('-')[4] != 'none' %}
+
+# Check out shopware source
+FROM alpine/git:latest AS clone
+
+RUN git clone https://github.com/shopware/shopware.git /shopware --depth=1 --branch={{ shopwareVersion }}
+RUN cd /shopware && \
+git status && \
+rm -rf .git
+
+{% if consentManagerVersion %}
+    RUN cd /shopware/custom/plugins && \
+    git clone https://github.com/shopware5/SwagCookieConsentManager.git SwagCookieConsentManager --branch={{ consentManagerVersion }}
+{% endif %}
+
+FROM docker.io/local/running:shopware-{{ shopwareVersion }}-{{ mysqlVersion }}-{{ phpVersion }}
+
+COPY --from="clone" /shopware /shopware
+
+WORKDIR /shopware
+
+ENV COMPOSER_ALLOW_SUPERUSER=1
+ENV DB_USER=root
+ENV DB_PORT=3306
+ENV DB_NAME=shopware
+ENV DB_HOST=127.0.0.1
+ENV DB_PASSWORD=root
+ENV SW_HOST=localhost
+ENV SW_BASE_PATH=
+
+RUN mysqld --user=root
+
+RUN mysqld --user=root status
+RUN mysql -uroot -h 127.0.0.1 --port 3306 -e "SELECT version();"
+
+{% if shopwareVersion < 5.7 %}
+    RUN sed -e "s/%db\.user%/${DB_USER}/g" -e "s/%db\.password%/${DB_PASSWORD}/g" -e "s/%db\.database%/${DB_NAME}/g" -e "s/%db\.host%/${DB_HOST}/g" -e "s/%db\.port%/${DB_PORT}/g" < config.php.dist > config.php
+    RUN php bin/console sw:database:setup --steps=drop,create,import,importDemodata
+    RUN php bin/console sw:cache:clear
+    RUN php bin/console sw:database:setup --steps=setupShop --shop-url="http://${SW_HOST}${SW_BASE_PATH}"
+    RUN php bin/console sw:snippets:to:db --include-plugins
+    RUN php bin/console sw:theme:initialize
+    RUN php bin/console sw:firstrunwizard:disable
+    RUN php bin/console sw:admin:create --name="Demo" --email="demo@demo.de" --username="demo" --password="demo" --locale="de_DE" -n
+    RUN touch recovery/install/data/install.lock
+{% else %}
+    RUN make init
+{% endif %}
+
+{% if consentManagerVersion %}
+    RUN php bin/console sw:plugin:refresh && \
+    php bin/console sw:plugin:install SwagCookieConsentManager && \
+    php bin/console sw:cache:clear
+{% endif %}
