@@ -1,7 +1,8 @@
-{% set shopwareVersion = imageName|split('-')[1] %}
-{% set mysqlVersion = imageName|split('-')[2] %}
-{% set phpVersion = imageName|split('-')[3] %}
-{% set consentManagerVersion = imageName|split('-')[4] != 'none' %}
+{% set shopwareVersion = imageName|split('_')[1] %}
+{% set mysqlVersion = imageName|split('_')[2] %}
+{% set phpVersion = imageName|split('_')[3] %}
+{% set consentManagerVersion = imageName|split('_')[4] %}
+{% set consentManagerReqired = consentManagerVersion != 'none' %}
 
 # Check out shopware source
 FROM alpine/git:latest AS clone
@@ -11,12 +12,12 @@ RUN cd /shopware && \
 git status && \
 rm -rf .git
 
-{% if consentManagerVersion %}
+{% if consentManagerReqired %}
     RUN cd /shopware/custom/plugins && \
     git clone https://github.com/shopware5/SwagCookieConsentManager.git SwagCookieConsentManager --branch={{ consentManagerVersion }}
 {% endif %}
 
-FROM docker.io/local/running:shopware-{{ shopwareVersion }}-{{ mysqlVersion }}-{{ phpVersion }}
+FROM ghcr.io/shopware5/docker-images-testing/base_{{ shopwareVersion }}_{{ shopwareVersion }}_{{ phpVersion }}
 
 COPY --from="clone" /shopware /shopware
 
@@ -45,7 +46,7 @@ ENV SW_BASE_PATH=
     RUN /bin/bash -c "/usr/bin/mysqld_safe --skip-grant-tables &" && make init
 {% endif %}
 
-{% if consentManagerVersion %}
+{% if consentManagerReqired %}
     RUN php bin/console sw:plugin:refresh && \
     php bin/console sw:plugin:install SwagCookieConsentManager && \
     php bin/console sw:cache:clear

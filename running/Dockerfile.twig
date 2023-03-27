@@ -1,7 +1,7 @@
-{% set phpVersion = imageName|split('-')|last %}
+{% set phpVersion = imageName|split('_')|last %}
 {% set phpMajor = phpVersion|split('.')[0] %}
 {% set phpMinor = phpVersion|split('.')[1] %}
-{% set mysqlVersion = imageName|split('-')[2] %}
+{% set mysqlVersion = imageName|split('_')[2] %}
 
 {% if phpMajor > 7 or (phpMajor == 7 and phpMinor == 4) %}
 FROM php:{{ phpVersion }}-fpm
@@ -86,12 +86,12 @@ EXPOSE 80
 WORKDIR /var/www/html
 
 
-{% if mysqlVersion < 8 %}
-RUN curl -LsS https://r.mariadb.com/downloads/mariadb_repo_setup | sudo bash -s -- --mariadb-server-version="mariadb-10.3"
-RUN yes | apt-get install mariadb-server mariadb-client
-{% else %}
-RUN yes | apt install mariadb-server-10.5
-{% endif %}
+{#{% if mysqlVersion < 8 %}#}
+{#RUN curl -LsS https://r.mariadb.com/downloads/mariadb_repo_setup | sudo bash -s -- --mariadb-server-version="mariadb-10.3"#}
+{#RUN yes | apt-get install mariadb-server mariadb-client#}
+{#{% else %}#}
+RUN yes | apt install mariadb-server mariadb-client
+{#{% endif %}#}
 
 
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
