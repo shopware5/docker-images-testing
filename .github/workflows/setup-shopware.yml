@@ -57,7 +57,7 @@ jobs:
                     password: ${{ github.token }}
 
             -   run: npm install
-            
+
             -   run: make running:shopware_${{ matrix.versions.shopware }}_${{ matrix.versions.mysql }}_${{ matrix.versions.php }}
             -   run: docker push ghcr.io/shopware5/docker-images-testing/running:shopware_${{ matrix.versions.shopware }}_${{ matrix.versions.mysql }}_${{ matrix.versions.php }}
 
