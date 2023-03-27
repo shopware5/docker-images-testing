@@ -43,18 +43,18 @@ jobs:
                             mysql: '8.0'
                             consentManager: 'none'
 
-    steps:
-        -   uses: actions/setup-node@v3
-            with:
-                node-version: latest
+        steps:
+            -   uses: actions/setup-node@v3
+                with:
+                    node-version: latest
 
-        -   run: \
-                npm install
-                make running:Shopware-${ matrix.versions.shopware }-${ matrix.versions.mysql }-${ matrix.versions.php }
-                make install:Shopware-${ matrix.versions.shopware }-${ matrix.versions.mysql }-${ matrix.versions.php }-${ matrix.versions.consentManager }
+            -   run: \
+                    npm install
+                    make running:Shopware-${ matrix.versions.shopware }-${ matrix.versions.mysql }-${ matrix.versions.php }
+                    make install:Shopware-${ matrix.versions.shopware }-${ matrix.versions.mysql }-${ matrix.versions.php }-${ matrix.versions.consentManager }
 
-        -   run: export CR_PAT=${{ github.token }}
+            -   run: export CR_PAT=${{ github.token }}
 
-        -   run: echo $CR_PAT | docker login ghcr.io -u shopware5 --password-stdin
+            -   run: echo $CR_PAT | docker login ghcr.io -u shopware5 --password-stdin
 
-        -   run: docker push ghcr.io/shopware5/docker-images-testing/${ matrix.versions.shopware }-${ matrix.versions.mysql }-${ matrix.versions.php }-${ matrix.versions.consentManager }:latest
+            -   run: docker push ghcr.io/shopware5/docker-images-testing/${ matrix.versions.shopware }-${ matrix.versions.mysql }-${ matrix.versions.php }-${ matrix.versions.consentManager }:latest
