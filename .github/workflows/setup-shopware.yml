@@ -1,9 +1,10 @@
 on:
     workflow_call:
-    pull_request:
-        branches:
-            - main
-        types: [closed]
+    push:
+#    pull_request:
+#        branches:
+#            - main
+#        types: [closed]
 jobs:
     setup-shopware:
         name: Setup Shopware
@@ -43,17 +44,23 @@ jobs:
                         consentManager: 'none'
 
         steps:
+            -   uses: actions/checkout@v3
             -   uses: actions/setup-node@v3
                 with:
-                    node-version: latest
+                    node-version: current
 
-            -   run: \
-                    npm install
-                    make running:Shopware-${ matrix.versions.shopware }-${ matrix.versions.mysql }-${ matrix.versions.php }
-                    make install:Shopware-${ matrix.versions.shopware }-${ matrix.versions.mysql }-${ matrix.versions.php }-${ matrix.versions.consentManager }
+            -   name: Login to GitHub Container Registry
+                uses: docker/login-action@v2
+                with:
+                    registry: ghcr.io
+                    username: ${{ github.actor }}
+                    password: ${{ github.token }}
 
-            -   run: export CR_PAT=${{ github.token }}
+            -   run: npm install
+            
+            -   run: make running:shopware_${{ matrix.versions.shopware }}_${{ matrix.versions.mysql }}_${{ matrix.versions.php }}
+            -   run: docker push ghcr.io/shopware5/docker-images-testing/running:shopware_${{ matrix.versions.shopware }}_${{ matrix.versions.mysql }}_${{ matrix.versions.php }}
 
-            -   run: echo $CR_PAT | docker login ghcr.io -u shopware5 --password-stdin
+            -   run: make install:shopware_${{ matrix.versions.shopware }}_${{ matrix.versions.mysql }}_${{ matrix.versions.php }}_${{ matrix.versions.consentManager }}
+            -   run: docker push ghcr.io/shopware5/docker-images-testing/install:shopware_${{ matrix.versions.shopware }}_${{ matrix.versions.mysql }}_${{ matrix.versions.php }}_${{ matrix.versions.consentManager }}
 
-            -   run: docker push ghcr.io/shopware5/docker-images-testing/${ matrix.versions.shopware }-${ matrix.versions.mysql }-${ matrix.versions.php }-${ matrix.versions.consentManager }:latest
