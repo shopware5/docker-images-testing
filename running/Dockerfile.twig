@@ -4,66 +4,46 @@
 {% set mysqlVersion = imageName|split('-')[2] %}
 
 {% if phpMajor > 7 or (phpMajor == 7 and phpMinor == 4) %}
-FROM php:{{ phpVersion }}-fpm-alpine3.16
+FROM php:{{ phpVersion }}-fpm
 {% else %}
-FROM php:{{ phpVersion }}-fpm-alpine
+FROM php:{{ phpVersion }}-fpm
 {% endif %}
 
-COPY --from=ochinchina/supervisord:latest /usr/local/bin/supervisord /usr/bin/supervisord
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  git \
+  ssl-cert \
+  nginx \
+  supervisor \
+  libwebp-dev \
+  zlib1g-dev \
+  libjpeg62-turbo-dev \
+  libzip-dev \
+  libfreetype6-dev \
+  libpng-dev \
+  libicu-dev \
+  libbz2-dev \
+  libxml2-dev \
+  sudo \
+  wget
 
 {% if phpMajor < 7 or (phpMajor == 7 and phpMinor < 4) %}
-COPY --from=ghcr.io/shyim/gnu-libiconv:v3.14 /gnu-libiconv-1.15-r3.apk /gnu-libiconv-1.15-r3.apk
+RUN docker-php-ext-configure zip \
+    --with-libzip
 {% endif %}
-
-RUN set -x \
-    && apk add --no-cache \
-    nginx \
-    bash \
-    git \
-    make \
-    zip \
-    shadow \
-    bzip2-dev \
-    libzip-dev \
-    gettext \
-    ca-certificates \
-    freetype-dev \
-    icu-dev \
-    libjpeg-turbo-dev \
-    libpng-dev \
-    libwebp-dev \
-    libxml2-dev \
-    libxslt-dev \
-    libffi-dev \
-    pcre-dev \
-    unzip \
-    ssmtp \
-{% if phpMajor > 7 or (phpMajor == 7 and phpMinor == 4) %}
-    icu-data-full \
-{% endif %}
-    && apk add --no-cache --virtual build-deps \
-    coreutils \
-    build-base \
-    autoconf \
-    automake \
-{% if phpMajor < 7 or (phpMajor == 7 and phpMinor < 4) %}
-    && docker-php-ext-configure zip \
-    --with-libzip \
-{% endif %}
-&& docker-php-ext-configure gd \
+RUN  docker-php-ext-configure gd \
 {% if phpMajor > 7 or (phpMajor == 7 and phpMinor == 4) %}
     --enable-gd \
     --with-freetype \
     --with-jpeg \
-    --with-webp \
+    --with-webp
 {% else %}
     --with-gd \
     --with-freetype-dir=/usr/include/ \
     --with-png-dir=/usr/include/ \
     --with-jpeg-dir=/usr/include/ \
-    --with-webp-dir \
+    --with-webp-dir
 {% endif %}
-    && docker-php-ext-install -j$(nproc) \
+RUN  docker-php-ext-install -j$(nproc) \
     bcmath \
     gd \
 {% if phpMajor >= 7 %}
@@ -95,35 +75,23 @@ RUN set -x \
     && pecl install redis \
     && docker-php-ext-enable redis \
     {% endif %}
-    && apk del build-deps \
     && rm -rf /tmp/* \
     && chown -R www-data:www-data /var/www \
     && usermod -u 1000 www-data \
-{% if phpMajor < 7 or (phpMajor == 7 and phpMinor < 4) %}
-    && apk add --no-cache --allow-untrusted /gnu-libiconv-1.15-r3.apk && rm /gnu-libiconv-1.15-r3.apk \
-{% endif %}
     && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-ENV LD_PRELOAD /usr/lib/preloadable_libiconv.so php
 
 COPY rootfs/ /
 EXPOSE 80
 WORKDIR /var/www/html
 
+
 {% if mysqlVersion < 8 %}
-RUN echo http://dl-cdn.alpinelinux.org/alpine/v3.9/main >> /etc/apk/repositories
-RUN apk add mysql=10.3.25-r0
-RUN mysql_install_db --user=root
-{#RUN mysqld -u root --data=./data &> /dev/null &#}
+RUN curl -LsS https://r.mariadb.com/downloads/mariadb_repo_setup | sudo bash -s -- --mariadb-server-version="mariadb-10.3"
+RUN yes | apt-get install mariadb-server mariadb-client
 {% else %}
-RUN apk add mysql mysql-client
-RUN mysql_install_db --user=root
-
-RUN ps -a
-
-RUN mysqld -u root --data=./data
-{#RUN mysqld -u root --data=./data &> /dev/null &#}
-
+RUN yes | apt install mariadb-server-10.5
 {% endif %}
 
-{#CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]#}
+
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
