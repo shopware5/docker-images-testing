@@ -18,7 +18,7 @@ install\:%:
 	docker build \
 		-t "${CI_REGISTRY_IMAGE}/$@" \
 		-f ./Dockerfile ./
-
+		--progress=plain
 aio:
 	docker build \
 		--secret id=UPSTREAM_REPOSITORY_URL \
