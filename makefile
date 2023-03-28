@@ -9,16 +9,16 @@ NODE_VERSION ?= 18
 running\:%:
 	node "twig.js" running/Dockerfile.twig "{\"imageName\": \"$@\"}" > running/Dockerfile
 	docker build --progress=plain \
-		-t "${CI_REGISTRY_IMAGE}/$@" \
+		-t "ghcr.io/shopware5/docker-images-testing/$@" \
 		-f ./running/Dockerfile ./running/
 		--progress=plain
 
 install\:%:
 	node "twig.js" Dockerfile.twig "{\"imageName\": \"$@\"}" > Dockerfile
 	docker build \
-		-t "${CI_REGISTRY_IMAGE}/$@" \
+		-t "ghcr.io/shopware5/docker-images-testing/$@" \
 		-f ./Dockerfile ./
-
+		--progress=plain
 aio:
 	docker build \
 		--secret id=UPSTREAM_REPOSITORY_URL \
