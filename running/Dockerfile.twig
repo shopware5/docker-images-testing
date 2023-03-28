@@ -87,7 +87,8 @@ WORKDIR /var/www/html
 
 
 {% if mysqlVersion < 8 %}
-RUN curl -LsS https://r.mariadb.com/downloads/mariadb_repo_setup | sudo bash -s -- --mariadb-server-version="mariadb-10.3" --os-type=debian --os-version=buster
+RUN sudo apt-get clean
+RUN curl -LsS https://r.mariadb.com/downloads/mariadb_repo_setup | sudo bash -s -- --mariadb-server-version="mariadb-10.3" --os-type=debian --os-version=buster --write-to-stdout
 RUN DEBIAN_FRONTEND=noninteractive apt -y install mariadb-server mariadb-client
 {% else %}
 RUN yes | apt install mariadb-server mariadb-client
