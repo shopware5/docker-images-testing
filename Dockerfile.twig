@@ -69,3 +69,5 @@ ENV SW_BASE_PATH=
     && php bin/console sw:plugin:install SwagCookieConsentManager \
     && php bin/console sw:cache:clear
 {% endif %}
+
+RUN chown -R www-data:www-data /shopware
