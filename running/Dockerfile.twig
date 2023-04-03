@@ -65,8 +65,9 @@ RUN  docker-php-ext-install -j$(nproc) \
     && ln -sf /tmp /var/lib/nginx/tmp \
     && mkdir /etc/supervisor.d/ \
     && mkdir -p /var/tmp/nginx/ \
-    && chown -R www-data:www-data /var/lib/nginx /var/tmp/nginx/ \
-    && chmod 777 -R /var/tmp/nginx/ \
+    && chown -R www-data:www-data /var/lib/nginx /var/tmp/nginx/ /var/log/nginx \
+    && chmod 777 -R  /var/lib/nginx /var/tmp/nginx/ /var/log/nginx \
+    && rm /etc/nginx/sites-enabled/default \
 {% if phpMajor > 7 or (phpMajor == 7 and phpMinor >= 1) %}
     && pecl install pcov \
     && docker-php-ext-enable pcov \
