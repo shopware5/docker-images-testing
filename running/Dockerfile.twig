@@ -17,7 +17,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   libwebp-dev \
   gettext-base \
   zlib1g-dev \
-  nodejs \
   libjpeg62-turbo-dev \
   libzip-dev \
   libfreetype6-dev \
@@ -83,6 +82,11 @@ RUN  docker-php-ext-install -j$(nproc) \
     && usermod -u 1000 www-data \
     && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
+
+RUN curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash -
+RUN sudo apt-get install -y nodejs
+RUN echo "NODE Version:" && node --version
+RUN echo "NPM Version:" && npm --version
 
 COPY rootfs/ /
 EXPOSE 80
