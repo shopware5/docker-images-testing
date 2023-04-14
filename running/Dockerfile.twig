@@ -3,84 +3,59 @@
 {% set phpMinor = phpVersion|split('.')[1] %}
 {% set mysqlVersion = imageName|split('_')[2] %}
 
-{% if phpMajor > 7 or (phpMajor == 7 and phpMinor == 4) %}
-FROM php:{{ phpVersion }}-fpm
-{% else %}
-FROM php:{{ phpVersion }}-fpm
-{% endif %}
+FROM ubuntu:22.04
+
+RUN apt-get update && apt-get install make
+
+{#Install PHP#}
+RUN apt-get update
+RUN apt install -y software-properties-common
+RUN add-apt-repository ppa:ondrej/php
+RUN apt-get update
+RUN apt install -y php{{ phpVersion }}-fpm
+RUN apt-get install -y php{{ phpVersion }}-iconv
+RUN apt-get install -y php{{ phpVersion }}-mysqli
+RUN apt-get install -y php{{ phpVersion }}-gd
+RUN apt-get install -y php{{ phpVersion }}-mbstring
+RUN apt-get install -y php{{ phpVersion }}-zip
+RUN apt-get install -y php{{ phpVersion }}-soap
+RUN apt-get install -y php{{ phpVersion }}-pdo
+RUN apt-get install -y php{{ phpVersion }}-curl
+RUN apt-get install -y php{{ phpVersion }}-dom
+RUN apt-get install -y php{{ phpVersion }}-simplexml
+RUN apt-get install -y php{{ phpVersion }}-xml
+RUN apt-get install -y php{{ phpVersion }}-intl
+RUN php -v
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-  git \
-  ssl-cert \
-  nginx \
-  supervisor \
-  libwebp-dev \
-  gettext-base \
-  zlib1g-dev \
-  libjpeg62-turbo-dev \
-  libzip-dev \
-  libfreetype6-dev \
-  libpng-dev \
-  libicu-dev \
-  libbz2-dev \
-  libxml2-dev \
-  sudo \
-  wget
+    git \
+    ssl-cert \
+    nginx \
+    supervisor \
+    libwebp-dev \
+    gettext-base \
+    zlib1g-dev \
+    libzip-dev \
+    libfreetype6-dev \
+    libpng-dev \
+    libicu-dev \
+    libbz2-dev \
+    libxml2-dev \
+    sudo \
+    wget \
+    curl
 
-{% if phpMajor < 7 or (phpMajor == 7 and phpMinor < 4) %}
-RUN docker-php-ext-configure zip \
-    --with-libzip
-{% endif %}
-RUN  docker-php-ext-configure gd \
-{% if phpMajor > 7 or (phpMajor == 7 and phpMinor == 4) %}
-    --enable-gd \
-    --with-freetype \
-    --with-jpeg \
-    --with-webp
+RUN rm -rf /tmp/*
+RUN chown -R www-data:www-data /var/www
+RUN usermod -u 1000 www-data
+
+{% if mysqlVersion < 8 %}
+    RUN sudo apt-get clean
+    RUN curl -LsS https://r.mariadb.com/downloads/mariadb_repo_setup | sudo bash -s -- --mariadb-server-version="mariadb-10.3" --os-type=debian --os-version=buster --write-to-stdout
+    RUN DEBIAN_FRONTEND=noninteractive apt -y install mariadb-server mariadb-client
 {% else %}
-    --with-gd \
-    --with-freetype-dir=/usr/include/ \
-    --with-png-dir=/usr/include/ \
-    --with-jpeg-dir=/usr/include/ \
-    --with-webp-dir
+    RUN yes | apt install mariadb-server mariadb-client
 {% endif %}
-RUN  docker-php-ext-install -j$(nproc) \
-    bcmath \
-    gd \
-{% if phpMajor >= 7 %}
-    intl \
-{% endif %}
-    mysqli \
-    pdo_mysql \
-    sockets \
-    bz2 \
-    soap \
-    calendar \
-    zip > /dev/null \
-    && sed -i 's/^mozilla\/DST_Root_CA_X3.crt$/!mozilla\/DST_Root_CA_X3.crt/' /etc/ca-certificates.conf \
-    && update-ca-certificates -f \
-    && ln -s /usr/local/bin/php /usr/bin/php \
-    && ln -sf /dev/stdout /var/log/nginx/access.log \
-    && ln -sf /dev/stderr /var/log/nginx/error.log \
-    && rm -rf /var/lib/nginx/tmp \
-    && ln -sf /tmp /var/lib/nginx/tmp \
-    && mkdir /etc/supervisor.d/ \
-    && mkdir -p /var/tmp/nginx/ \
-    && chown -R www-data:www-data /var/lib/nginx /var/tmp/nginx/ /var/log/nginx \
-    && chmod 777 -R  /var/lib/nginx /var/tmp/nginx/ /var/log/nginx \
-    && rm /etc/nginx/sites-enabled/default \
-{% if phpMajor > 7 or (phpMajor == 7 and phpMinor >= 1) %}
-    && pecl install pcov \
-    && docker-php-ext-enable pcov \
-{% endif %}
-    {% if phpMajor > 7 or (phpMajor == 7 and phpMinor >= 0) %}
-    && pecl install redis \
-    && docker-php-ext-enable redis \
-    {% endif %}
-    && rm -rf /tmp/* \
-    && chown -R www-data:www-data /var/www \
-    && usermod -u 1000 www-data \
-    && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 
 RUN curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash -
@@ -88,18 +63,13 @@ RUN sudo apt-get install -y nodejs
 RUN echo "NODE Version:" && node --version
 RUN echo "NPM Version:" && npm --version
 
+
+RUN curl -sS https://getcomposer.org/installer -o /tmp/composer-setup.php
+RUN php /tmp/composer-setup.php --install-dir=/usr/local/bin --filename=composer
+
+
 COPY rootfs/ /
 EXPOSE 80
 WORKDIR /var/www/html
-
-
-{% if mysqlVersion < 8 %}
-RUN sudo apt-get clean
-RUN curl -LsS https://r.mariadb.com/downloads/mariadb_repo_setup | sudo bash -s -- --mariadb-server-version="mariadb-10.3" --os-type=debian --os-version=buster --write-to-stdout
-RUN DEBIAN_FRONTEND=noninteractive apt -y install mariadb-server mariadb-client
-{% else %}
-RUN yes | apt install mariadb-server mariadb-client
-{% endif %}
-
 
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]

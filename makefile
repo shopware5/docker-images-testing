@@ -19,3 +19,4 @@ install\:%:
 		-t "ghcr.io/shopware5/docker-images-testing/$@" \
 		-f ./Dockerfile ./
 		--progress=plain
+
