@@ -5,14 +5,44 @@
 
 FROM ubuntu:22.04
 
-RUN apt-get update && apt-get install make
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    sudo \
+    make \
+    git \
+    ssl-cert \
+    supervisor \
+    libwebp-dev \
+    gettext-base \
+    zlib1g-dev \
+    libzip-dev \
+    libfreetype6-dev \
+    libpng-dev \
+    libicu-dev \
+    libbz2-dev \
+    libxml2-dev \
+    wget \
+    curl \
+    nginx \
+    ca-certificates
+
+RUN ln -sf /dev/stdout /var/log/nginx/access.log \
+{#    && ln -sf /dev/stderr /var/log/nginx/error.log \#}
+    && rm -rf /var/lib/nginx/tmp \
+    && ln -sf /tmp /var/lib/nginx/tmp \
+    && mkdir /etc/supervisor.d/ \
+    && mkdir -p /var/tmp/nginx/ \
+    && chown -R www-data:www-data /var/lib/nginx /var/tmp/nginx/ /var/log/nginx \
+    && chmod 777 -R  /var/lib/nginx /var/tmp/nginx/ /var/log/nginx \
+    && rm /etc/nginx/sites-enabled/default \
+    && rm -rf /tmp/* \
+    && usermod -u 1000 www-data
 
 {#Install PHP#}
-RUN apt-get update
-RUN apt install -y software-properties-common
-RUN add-apt-repository ppa:ondrej/php
-RUN apt-get update
-RUN apt install -y php{{ phpVersion }}-fpm
+RUN apt install -y software-properties-common \
+    && add-apt-repository ppa:ondrej/php \
+    && apt-get update
+
+RUN export DEBIAN_FRONTEND=noninteractive && apt-get install -y php{{ phpVersion }}-fpm
 RUN apt-get install -y php{{ phpVersion }}-iconv
 RUN apt-get install -y php{{ phpVersion }}-mysqli
 RUN apt-get install -y php{{ phpVersion }}-gd
@@ -27,49 +57,32 @@ RUN apt-get install -y php{{ phpVersion }}-xml
 RUN apt-get install -y php{{ phpVersion }}-intl
 RUN php -v
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    git \
-    ssl-cert \
-    nginx \
-    supervisor \
-    libwebp-dev \
-    gettext-base \
-    zlib1g-dev \
-    libzip-dev \
-    libfreetype6-dev \
-    libpng-dev \
-    libicu-dev \
-    libbz2-dev \
-    libxml2-dev \
-    sudo \
-    wget \
-    curl
-
-RUN rm -rf /tmp/*
-RUN chown -R www-data:www-data /var/www
-RUN usermod -u 1000 www-data
+{#RUN ln -sf /dev/stderr /var/log/php5.6-fpm.log#}
 
 {% if mysqlVersion < 8 %}
-    RUN sudo apt-get clean
-    RUN curl -LsS https://r.mariadb.com/downloads/mariadb_repo_setup | sudo bash -s -- --mariadb-server-version="mariadb-10.3" --os-type=debian --os-version=buster --write-to-stdout
+    RUN apt-get clean
+    RUN curl -LsS https://r.mariadb.com/downloads/mariadb_repo_setup | bash -s -- --mariadb-server-version="mariadb-10.3" --os-type=debian --os-version=buster --write-to-stdout
     RUN DEBIAN_FRONTEND=noninteractive apt -y install mariadb-server mariadb-client
 {% else %}
     RUN yes | apt install mariadb-server mariadb-client
 {% endif %}
 
 
-RUN curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash -
-RUN sudo apt-get install -y nodejs
-RUN echo "NODE Version:" && node --version
-RUN echo "NPM Version:" && npm --version
+RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash - && apt-get install -y nodejs
+RUN echo "NODE Version:" && node --version \
+    && echo "NPM Version:" && npm --version
 
+{#RUN apt-get -y install -y nodejs#}
+{#RUN apt-get -y install npm#}
 
-RUN curl -sS https://getcomposer.org/installer -o /tmp/composer-setup.php
-RUN php /tmp/composer-setup.php --install-dir=/usr/local/bin --filename=composer
-
+RUN sudo curl -sS https://getcomposer.org/installer -o /tmp/composer-setup.php \
+    && php /tmp/composer-setup.php --install-dir=/usr/local/bin --filename=composer
 
 COPY rootfs/ /
+
+
 EXPOSE 80
-WORKDIR /var/www/html
+WORKDIR /shopware
+
 
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
