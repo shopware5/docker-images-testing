@@ -68,8 +68,7 @@ ENV SW_BASE_PATH=
     RUN /bin/bash -c "/usr/bin/mysqld_safe --skip-grant-tables &" \
     && sleep 5 \
     && php bin/console sw:plugin:refresh \
-    && php bin/console sw:plugin:install SwagCookieConsentManager \
-    && php bin/console sw:cache:clear
+    && php bin/console sw:plugin:install SwagCookieConsentManager
 {% endif %}
 
 COPY --chown="root:root" entrypoint.sh /entrypoint.sh
@@ -78,3 +77,5 @@ COPY debug_config.php /shopware/config.php
 RUN chown -R www-data:www-data /shopware
 
 ENTRYPOINT ["bash", "-c", "/entrypoint.sh"]
+
+{#RUN php bin/console sw:cache:clear#}
