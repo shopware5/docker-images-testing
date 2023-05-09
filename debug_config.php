@@ -1,11 +1,11 @@
 <?php
 return [
     'db' => [
-        'username' => getenv('DB_USER'),
-        'password' => getenv('DB_PASSWORD'),
-        'dbname' => getenv('DB_NAME'),
-        'host' => getenv('DB_HOST'),
-        'port' => getenv('DB_PORT'),
+        'username' => '%db.user%',
+        'password' => '%db.password%',
+        'dbname' => '%db.database%',
+        'host' => '%db.host%',
+        'port' => '%db.port%'
     ],
 
     'csrfProtection' => [
@@ -26,11 +26,6 @@ return [
 
     'phpsettings' => [
         'display_errors' => 1,
-    ],
-
-    'errorHandler' => [
-        'throwOnRecoverableError' => true,
-        'ignoredExceptionClasses' => [],
     ],
 
     'template' => [
