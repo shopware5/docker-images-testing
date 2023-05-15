@@ -16,18 +16,7 @@ RUN add-apt-repository ppa:ondrej/php
 RUN apt-get update --fix-missing
 
 RUN apt install -y php{{ phpVersion }}-fpm
-RUN apt-get install -y php{{ phpVersion }}-iconv
-RUN apt-get install -y php{{ phpVersion }}-mysqli
-RUN apt-get install -y php{{ phpVersion }}-gd
-RUN apt-get install -y php{{ phpVersion }}-mbstring
-RUN apt-get install -y php{{ phpVersion }}-zip
-RUN apt-get install -y php{{ phpVersion }}-soap
-RUN apt-get install -y php{{ phpVersion }}-pdo
-RUN apt-get install -y php{{ phpVersion }}-curl
-RUN apt-get install -y php{{ phpVersion }}-dom
-RUN apt-get install -y php{{ phpVersion }}-simplexml
-RUN apt-get install -y php{{ phpVersion }}-xml
-RUN apt-get install -y php{{ phpVersion }}-intl
+RUN apt-get install -y php{{ phpVersion }}-common
 RUN php -v
 
 RUN ln -s /usr/sbin/php-fpm{{ phpVersion }} /usr/sbin/php-fpm
