@@ -1,9 +1,12 @@
+name: Setup older Shopware Version
+
+
 on:
     workflow_dispatch:
 
 jobs:
     setup-shopware:
-        name: Setup Shopware
+        name: Setup old Shopware
 
         strategy:
             matrix:
@@ -35,7 +38,7 @@ jobs:
 
         uses: ./.github/workflows/setup-workflow.yml
         with:
-           mysql-version: ${{ matrix.mysql }}
-           shopware-version: ${{ matrix.shopware }}
-           php-version: ${{ matrix.php }}
-           consent-manager: ${{ matrix.consentManager }}
+           mysql-version: ${{ matrix.versions.mysql }}
+           shopware-version: ${{ matrix.versions.shopware }}
+           php-version: ${{ matrix.versions.php }}
+           consent-manager: ${{ matrix.versions.consentManager }}

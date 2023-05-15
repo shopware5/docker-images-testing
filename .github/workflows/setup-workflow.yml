@@ -16,7 +16,13 @@ on:
                 default: "none"
 jobs:
     setup-shopware:
+        name: Setup Shopware ${{ inputs.shopware-version }}
         runs-on: ubuntu-latest
+        env:
+            MYSQL_VERSION: ${{ inputs.mysql-version }}
+            SHOPWARE_VERSION: ${{ inputs.shopware-version }}
+            PHP_VERSION: ${{ inputs.php-version }}
+            CONSENT_MANAGER: ${{ inputs.consent-manager }}
         steps:
             -   uses: actions/checkout@v3
             -   uses: actions/setup-node@v3
@@ -34,14 +40,14 @@ jobs:
                 run: npm install
 
             -   name: Create base image
-                run: make running:shopware_${{ inputs.shopware-version }}_${{ inputs.mysql-version }}_${{ inputs.php-version }}
+                run: make running:shopware_${{ env.SHOPWARE_VERSION }}_${{ env.MYSQL_VERSION }}_${{ env.PHP_VERSION }}
 
             -   name: Push base image
-                run: docker push ghcr.io/shopware5/docker-images-testing/running:shopware_${{ inputs.shopware-version }}_${{ inputs.mysql-version }}_${{ inputs.php-version }}
+                run: docker push ghcr.io/shopware5/docker-images-testing/running:shopware_${{ env.SHOPWARE_VERSION }}_${{ env.MYSQL_VERSION }}_${{ env.PHP_VERSION }}
 
             -   name: Create allInOne Image
-                run: make install:shopware_${{ inputs.shopware-version }}_${{ inputs.mysql-version }}_${{ inputs.php-version }}_${{ inputs.consent-manager }}
+                run: make install:shopware_${{ env.SHOPWARE_VERSION }}_${{ env.MYSQL_VERSION }}_${{ env.PHP_VERSION }}_${{ env.CONSENT_MANAGER }}
 
             -   name: Push allInOne Image
-                run: docker push ghcr.io/shopware5/docker-images-testing/install:shopware_${{ inputs.shopware-version }}_${{ inputs.mysql-version }}_${{ inputs.php-version }}_${{ inputs.consent-manager }}
+                run: docker push ghcr.io/shopware5/docker-images-testing/install:shopware_${{ env.SHOPWARE_VERSION }}_${{ env.MYSQL_VERSION }}_${{ env.PHP_VERSION }}_${{ env.CONSENT_MANAGER }}
 
