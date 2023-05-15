@@ -1,4 +1,4 @@
-name: PHP code analysis
+name: PHPUnit Tests
 
 on:
     workflow_call:
@@ -6,27 +6,39 @@ on:
             plugin-name:
                 required: true
                 type: string
+            shopware-version:
+                required: true
+                type: string
+            php-version:
+                required: true
+                type: string
+            consent-manager:
+                required: false
+                type: string
+                default: "none"
 
 jobs:
-    php-code-analysis:
-        name: Code analysis
+    php-unit-tests-shopware:
+        name: Shopware ${{ inputs.shopware-version }} PHP version ${{ inputs.php-version }}
         runs-on: ubuntu-latest
         env:
             PLUGIN_NAME: ${{ inputs.plugin-name }}
-
+            SHOPWARE_VERSION: ${{ inputs.shopware-version }}
+            PHP_VERSION: ${{ inputs.php-version }}
+            CONSENT_MANAGER: ${{ inputs.consent-manager }}
         container:
-            image: ghcr.io/shopware5/docker-images-testing/install:shopware_5.7_8.0_8.2_none
+            image: ghcr.io/shopware5/docker-images-testing/install:shopware_${{ inputs.shopware-version }}_8.0_${{ inputs.php-version }}_${{ inputs.consent-manager }}
             credentials:
                 username: ${{ github.actor }}
                 password: ${{ secrets.github_token }}
 
         steps:
-            -   run: /usr/bin/supervisord -c /etc/supervisord.conf &
+            - run: /usr/bin/supervisord -c /etc/supervisord.conf &
 
-            -   name: Checkout ${{ env.PLUGIN_NAME }} test
-                uses: actions/checkout@v3
-                with:
-                    path: plugin
+            - name: Checkout ${{ env.PLUGIN_NAME }}
+              uses: actions/checkout@v3
+              with:
+                  path: plugin
 
             - name: Get Composer Cache Directory
               id: composer-cache
@@ -49,14 +61,7 @@ jobs:
                     make composer-install
                     make install-plugin
 
-            -   name: Execute PHP Code-Style-fixer
+            -   name: Execute PHP unit tests
                 run: |
-                    cd /shopware/custom/plugins/${{ env.PLUGIN_NAME}}
-                    make fix-cs-dry
-
-            -   name: Execute PHP-Stan
-                run: |
-                    cd /shopware
-                    php bin/console -e production -q # Initialise DIC (var/cache/production____REVISION____) for phpstan
-                    cd custom/plugins/${{ env.PLUGIN_NAME }}
-                    make phpstan
+                    cd /shopware/custom/plugins/${{ env.PLUGIN_NAME }}
+                    make run-tests

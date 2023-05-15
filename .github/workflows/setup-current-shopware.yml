@@ -1,0 +1,42 @@
+on:
+    push:
+        branches:
+            - main
+jobs:
+    setup-shopware:
+        name: Setup Shopware
+
+        strategy:
+            matrix:
+                versions:
+                    -   shopware: '5.7'
+                        php: '7.4'
+                        mysql: '8.0'
+                        consentManager: 'none'
+
+                    -   shopware: '5.7'
+                        php: '8.0'
+                        mysql: '8.0'
+                        consentManager: 'none'
+
+                    -   shopware: '5.7'
+                        php: '8.1'
+                        mysql: '8.0'
+                        consentManager: 'none'
+
+                    -   shopware: '5.7'
+                        php: '8.2'
+                        mysql: '8.0'
+                        consentManager: 'none'
+
+                    -   shopware: '5.7.4'
+                        php: '8.2'
+                        mysql: '8.0'
+                        consentManager: 'none'
+
+        uses: ./.github/workflows/setup-workflow.yml
+        with:
+            mysql-version: ${{ matrix.mysql }}
+            shopware-version: ${{ matrix.shopware }}
+            php-version: ${{ matrix.php }}
+            consent-manager: ${{ matrix.consentManager }}

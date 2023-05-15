@@ -1,0 +1,47 @@
+on:
+    workflow_call:
+        inputs:
+            mysql-version:
+                required: true
+                type: string
+            shopware-version:
+                required: true
+                type: string
+            php-version:
+                required: true
+                type: string
+            consent-manager:
+                required: false
+                type: string
+                default: "none"
+jobs:
+    setup-shopware:
+        runs-on: ubuntu-latest
+        steps:
+            -   uses: actions/checkout@v3
+            -   uses: actions/setup-node@v3
+                with:
+                    node-version: current
+
+            -   name: Login to GitHub Container Registry
+                uses: docker/login-action@v2
+                with:
+                    registry: ghcr.io
+                    username: ${{ github.actor }}
+                    password: ${{ github.token }}
+
+            -   name: Install dependencies
+                run: npm install
+
+            -   name: Create base image
+                run: make running:shopware_${{ inputs.shopware-version }}_${{ inputs.mysql-version }}_${{ inputs.php-version }}
+
+            -   name: Push base image
+                run: docker push ghcr.io/shopware5/docker-images-testing/running:shopware_${{ inputs.shopware-version }}_${{ inputs.mysql-version }}_${{ inputs.php-version }}
+
+            -   name: Create allInOne Image
+                run: make install:shopware_${{ inputs.shopware-version }}_${{ inputs.mysql-version }}_${{ inputs.php-version }}_${{ inputs.consent-manager }}
+
+            -   name: Push allInOne Image
+                run: docker push ghcr.io/shopware5/docker-images-testing/install:shopware_${{ inputs.shopware-version }}_${{ inputs.mysql-version }}_${{ inputs.php-version }}_${{ inputs.consent-manager }}
+
