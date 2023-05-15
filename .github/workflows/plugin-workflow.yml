@@ -1,0 +1,23 @@
+name: Reusable workflow for Plugins
+
+on:
+    workflow_call:
+        inputs:
+            plugin-name:
+                required: true
+                type: string
+
+jobs:
+    php-code-analysis:
+        name: PHP
+        uses: ./.github/workflows/php-code-analysis.yml
+        with:
+            plugin-name: {{ inputs.plugin-name }}
+        secrets: inherit
+
+    php-unit-tests-shopware-5-7:
+        name: Unit tests
+        uses: ./.github/workflows/php-unit-tests-shopware-5-7.yml
+        with:
+            plugin-name: { { inputs.plugin-name } }
+        secrets: inherit
