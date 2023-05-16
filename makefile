@@ -20,3 +20,8 @@ install\:%:
 		-f ./Dockerfile ./
 		--progress=plain
 
+test\:%:
+	docker run -d -p 80:80 "ghcr.io/shopware5/docker-images-testing/install:$*"
+	sleep 15s
+	curl http://localhost | grep "shopware"
+
