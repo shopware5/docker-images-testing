@@ -1,0 +1,67 @@
+name: PHPUnit Tests
+
+on:
+    workflow_call:
+        inputs:
+            plugin-name:
+                required: true
+                type: string
+            shopware-version:
+                required: true
+                type: string
+            php-version:
+                required: true
+                type: string
+            consent-manager:
+                required: false
+                type: string
+                default: "none"
+
+jobs:
+    php-unit-tests-shopware:
+        name: Shopware ${{ inputs.shopware-version }} PHP version ${{ inputs.php-version }}
+        runs-on: ubuntu-latest
+        env:
+            PLUGIN_NAME: ${{ inputs.plugin-name }}
+            SHOPWARE_VERSION: ${{ inputs.shopware-version }}
+            PHP_VERSION: ${{ inputs.php-version }}
+            CONSENT_MANAGER: ${{ inputs.consent-manager }}
+        container:
+            image: ghcr.io/shopware5/docker-images-testing/install:shopware_${{ inputs.shopware-version }}_8.0_${{ inputs.php-version }}_${{ inputs.consent-manager }}
+            credentials:
+                username: ${{ github.actor }}
+                password: ${{ secrets.github_token }}
+
+        steps:
+            - run: /usr/bin/supervisord -c /etc/supervisord.conf &
+
+            - name: Checkout ${{ env.PLUGIN_NAME }}
+              uses: actions/checkout@v3
+              with:
+                  path: plugin
+
+            - name: Get Composer Cache Directory
+              id: composer-cache
+              run: |
+                  echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+            - uses: actions/cache@v3
+              with:
+                  path: ${{ steps.composer-cache.outputs.dir }}
+                  key: ${{ runner.os }}-composer-${{ hashFiles('plugin/composer.lock') }}
+                  restore-keys: |
+                      ${{ runner.os }}-composer-
+
+
+            -   name: Move plugin
+                run: mv "$(pwd)/plugin" /shopware/custom/plugins/${{ env.PLUGIN_NAME }}
+
+            -   name: Setup ${{ env.PLUGIN_NAME }}
+                run: |
+                    cd /shopware/custom/plugins/${{ env.PLUGIN_NAME }}
+                    make composer-install
+                    make install-plugin
+
+            -   name: Execute PHP unit tests
+                run: |
+                    cd /shopware/custom/plugins/${{ env.PLUGIN_NAME }}
+                    make run-tests

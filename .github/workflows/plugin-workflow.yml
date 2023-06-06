@@ -1,0 +1,37 @@
+name: Reusable workflow for Plugins
+
+on:
+    workflow_call:
+        inputs:
+            plugin-name:
+                required: true
+                type: string
+            shopware-version:
+                required: true
+                type: string
+            php-version:
+                required: true
+                type: string
+            consent-manager:
+                required: false
+                type: string
+                default: "none"
+
+jobs:
+    php-code-analysis:
+        uses: ./.github/workflows/php-code-analysis.yml
+        with:
+            plugin-name: ${{ inputs.plugin-name }}
+            shopware-version: ${{ inputs.shopware-version }}
+            php-version: ${{ inputs.php-version }}
+            consent-manager: ${{ inputs.consent-manager }}
+        secrets: inherit
+
+    php-unit-tests-shopware:
+        uses: ./.github/workflows/php-unit-tests-shopware.yml
+        with:
+            plugin-name: ${{ inputs.plugin-name }}
+            shopware-version: ${{ inputs.shopware-version }}
+            php-version: ${{ inputs.php-version }}
+            consent-manager: ${{ inputs.consent-manager }}
+        secrets: inherit
