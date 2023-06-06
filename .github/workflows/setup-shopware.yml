@@ -76,6 +76,9 @@ jobs:
             -   name: Create allInOne Image
                 run: make install:shopware_${{ matrix.versions.shopware }}_${{ matrix.versions.mysql }}_${{ matrix.versions.php }}_${{ matrix.versions.consentManager }}
 
+            -   name: Test allInOne Image
+                run: make test:shopware_${{ matrix.versions.shopware }}_${{ matrix.versions.mysql }}_${{ matrix.versions.php }}_${{ matrix.versions.consentManager }}
+
             -   name: Push allInOne Image
                 run: docker push ghcr.io/shopware5/docker-images-testing/install:shopware_${{ matrix.versions.shopware }}_${{ matrix.versions.mysql }}_${{ matrix.versions.php }}_${{ matrix.versions.consentManager }}
 

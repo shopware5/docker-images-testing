@@ -45,6 +45,8 @@ ENV DB_PASSWORD=root
 ENV SW_HOST=localhost
 ENV SW_BASE_PATH=
 
+COPY debug_config.php /shopware/config.php.dist
+
 {% if shopwareVersion < 5.7 %}
     RUN composer install
     RUN sed -e "s/%db\.user%/${DB_USER}/g" -e "s/%db\.password%/${DB_PASSWORD}/g" -e "s/%db\.database%/${DB_NAME}/g" -e "s/%db\.host%/${DB_HOST}/g" -e "s/%db\.port%/${DB_PORT}/g" < config.php.dist > config.php
@@ -73,7 +75,6 @@ ENV SW_BASE_PATH=
 
 COPY --chown="root:root" entrypoint.sh /entrypoint.sh
 
-COPY debug_config.php /shopware/config.php
 RUN chown -R www-data:www-data /shopware
 
 ENTRYPOINT ["bash", "-c", "/entrypoint.sh"]
