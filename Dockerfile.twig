@@ -1,27 +1,18 @@
-{% set shopwareVersionUnformat = imageName|split('_')[1]%}
-{% set shopwareVersion = shopwareVersionUnformat|slice(0,3) %}
+{% set shopwareVersion = imageName|split('_')[1] %}
 {% set mysqlVersion = imageName|split('_')[2] %}
 {% set phpVersion = imageName|split('_')[3] %}
 {% set consentManagerVersion = imageName|split('_')[4] %}
 {% set consentManagerRequired = consentManagerVersion != 'none' %}
-{% if shopwareVersionUnformat|length == 5 %}
-    {% set shopwareTagVersion = shopwareVersionUnformat %}
-{% endif %}
 
 # Check out shopware source
 FROM alpine/git:latest AS clone
 RUN git clone https://github.com/shopware/shopware.git /shopware --depth=1 --branch={{ shopwareVersion }}
 RUN cd /shopware && \
-{% if shopwareTagVersion is defined %}
-    git fetch --tags && \
-    git checkout tags/v{{ shopwareTagVersion }} && \
-{% endif %}
 git status && \
 rm -rf .git
-
 {% if consentManagerRequired %}
     RUN cd /shopware/custom/plugins && \
-    git clone https://github.com/shopware5/SwagCookieConsentManager.git SwagCookieConsentManager --branch={{ consentManagerVersion }}
+    git clone https://github.com/shopware5/SwagCookieConsentManager.git SwagCookieConsentManager --depth=1 --branch={{ consentManagerVersion }}
 {% endif %}
 
 

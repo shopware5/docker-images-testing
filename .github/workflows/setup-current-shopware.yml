@@ -31,8 +31,8 @@ jobs:
                         mysql: '8.0'
                         consentManager: 'none'
 
-                    -   shopware: '5.7.4'
-                        php: '8.2'
+                    -   shopware: 'v5.7.4'
+                        php: '8.0'
                         mysql: '8.0'
                         consentManager: 'none'
 
