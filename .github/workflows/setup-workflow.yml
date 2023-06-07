@@ -42,12 +42,12 @@ jobs:
             -   name: Create base image
                 run: make running:shopware_${{ env.SHOPWARE_VERSION }}_${{ env.MYSQL_VERSION }}_${{ env.PHP_VERSION }}
 
-            -   name: Push base image
-                run: docker push ghcr.io/shopware5/docker-images-testing/running:shopware_${{ env.SHOPWARE_VERSION }}_${{ env.MYSQL_VERSION }}_${{ env.PHP_VERSION }}
+            #-   name: Push base image
+            #    run: docker push ghcr.io/shopware5/docker-images-testing/running:shopware_${{ env.SHOPWARE_VERSION }}_${{ env.MYSQL_VERSION }}_${{ env.PHP_VERSION }}
 
             -   name: Create allInOne Image
                 run: make install:shopware_${{ env.SHOPWARE_VERSION }}_${{ env.MYSQL_VERSION }}_${{ env.PHP_VERSION }}_${{ env.CONSENT_MANAGER }}
 
-            -   name: Push allInOne Image
-                run: docker push ghcr.io/shopware5/docker-images-testing/install:shopware_${{ env.SHOPWARE_VERSION }}_${{ env.MYSQL_VERSION }}_${{ env.PHP_VERSION }}_${{ env.CONSENT_MANAGER }}
+            #-   name: Push allInOne Image
+            #    run: docker push ghcr.io/shopware5/docker-images-testing/install:shopware_${{ env.SHOPWARE_VERSION }}_${{ env.MYSQL_VERSION }}_${{ env.PHP_VERSION }}_${{ env.CONSENT_MANAGER }}
 
