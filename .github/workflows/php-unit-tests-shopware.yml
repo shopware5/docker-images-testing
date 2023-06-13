@@ -12,6 +12,9 @@ on:
             php-version:
                 required: true
                 type: string
+            mysql-version:
+                required: true
+                type: string
             consent-manager:
                 required: false
                 type: string
@@ -19,7 +22,7 @@ on:
 
 jobs:
     php-unit-tests-shopware:
-        name: Shopware ${{ inputs.shopware-version }} PHP version ${{ inputs.php-version }}
+        name: Shopware ${{ inputs.shopware-version }} PHP Version ${{ inputs.php-version }}
         runs-on: ubuntu-latest
         env:
             PLUGIN_NAME: ${{ inputs.plugin-name }}
@@ -27,7 +30,7 @@ jobs:
             PHP_VERSION: ${{ inputs.php-version }}
             CONSENT_MANAGER: ${{ inputs.consent-manager }}
         container:
-            image: ghcr.io/shopware5/docker-images-testing/install:shopware_${{ inputs.shopware-version }}_8.0_${{ inputs.php-version }}_${{ inputs.consent-manager }}
+            image: ghcr.io/shopware5/docker-images-testing/install:shopware_${{ inputs.shopware-version }}_${{ inputs.mysql-version }}_${{ inputs.php-version }}_${{ inputs.consent-manager }}
             credentials:
                 username: ${{ github.actor }}
                 password: ${{ secrets.github_token }}
