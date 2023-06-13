@@ -22,9 +22,6 @@ jobs:
         uses: ./.github/workflows/php-code-analysis.yml
         with:
             plugin-name: ${{ inputs.plugin-name }}
-            shopware-version: ${{ inputs.shopware-version }}
-            php-version: ${{ inputs.php-version }}
-            consent-manager: ${{ inputs.consent-manager }}
         secrets: inherit
 
     php-unit-tests-shopware:
