@@ -1,3 +1,5 @@
+name: Reusable workflow for Shopware setup
+
 on:
     workflow_call:
         inputs:
@@ -47,6 +49,9 @@ jobs:
 
             -   name: Create allInOne Image
                 run: make install:shopware_${{ env.SHOPWARE_VERSION }}_${{ env.MYSQL_VERSION }}_${{ env.PHP_VERSION }}_${{ env.CONSENT_MANAGER }}
+
+            -   name: Test allInOne Image
+                run: make test:shopware_${{ env.SHOPWARE_VERSION }}_${{ env.MYSQL_VERSION }}_${{ env.PHP_VERSION }}_${{ env.CONSENT_MANAGER }}
 
             -   name: Push allInOne Image
                 run: docker push ghcr.io/shopware5/docker-images-testing/install:shopware_${{ env.SHOPWARE_VERSION }}_${{ env.MYSQL_VERSION }}_${{ env.PHP_VERSION }}_${{ env.CONSENT_MANAGER }}
