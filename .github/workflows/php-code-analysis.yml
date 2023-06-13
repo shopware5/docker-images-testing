@@ -9,13 +9,13 @@ on:
 
 jobs:
     php-code-analysis:
-        name: Code analysis
+        name: Code analysis for ${{ inputs.plugin-name }}
         runs-on: ubuntu-latest
         env:
             PLUGIN_NAME: ${{ inputs.plugin-name }}
 
         container:
-            image: ghcr.io/shopware5/docker-images-testing/install:shopware_5.7_8.0_8.2_none
+            image: ghcr.io/shopware5/docker-images-testing/install:shopware_5.7_8.0_7.4_none
             credentials:
                 username: ${{ github.actor }}
                 password: ${{ secrets.github_token }}
