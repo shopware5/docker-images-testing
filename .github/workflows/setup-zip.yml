@@ -1,0 +1,56 @@
+on:
+    workflow_call:
+    push:
+#    pull_request:
+#        branches:
+#            - main
+#        types: [closed]
+jobs:
+    setup-shopware:
+        name: Setup Shopware
+        runs-on: ubuntu-latest
+
+        strategy:
+            matrix:
+                versions:
+                    -   shopware-zip: 'install_5.6.10_b9471cf7c3f30dfc05d7c959f555c2a8d1c24420'
+                        shopware: '5.6.10'
+                        php: '7.4'
+                        mysql: '5.7'
+                        consentManager: 'none'
+
+                    -   shopware-zip: 'install_5.4.6_f667f6471a77bb5af0c115f3e243594e6353747e'
+                        shopware: '5.4.5'
+                        php: '7.1'
+                        mysql: '5.7'
+                        consentManager: 'none'
+        steps:
+            -   uses: actions/checkout@v3
+            -   uses: actions/setup-node@v3
+                with:
+                    node-version: current
+
+            -   name: Login to GitHub Container Registry
+                uses: docker/login-action@v2
+                with:
+                    registry: ghcr.io
+                    username: ${{ github.actor }}
+                    password: ${{ github.token }}
+
+            -   name: Install dependencies
+                run: npm install
+
+            -   name: Create base image
+                run: make running:shopware_${{ matrix.versions.shopware }}_${{ matrix.versions.mysql }}_${{ matrix.versions.php }}
+
+            -   name: Push base image
+                run: docker push ghcr.io/shopware5/docker-images-testing/running:shopware_${{ matrix.versions.shopware }}_${{ matrix.versions.mysql }}_${{ matrix.versions.php }}
+
+            -   name: Create zip Image
+                run: make zip:shopware_${{ matrix.versions.shopware }}_${{ matrix.versions.shopware-zip }}_${{ matrix.versions.mysql }}_${{ matrix.versions.php }}_${{ matrix.versions.consentManager }}
+
+            -   name: Test zip Image
+                run: make test-zip:shopware_${{ matrix.versions.shopware }}_${{ matrix.versions.shopware-zip }}_${{ matrix.versions.mysql }}_${{ matrix.versions.php }}_${{ matrix.versions.consentManager }}
+
+            -   name: Push zip Image
+                run: docker push ghcr.io/shopware5/docker-images-testing/zip:shopware_${{ matrix.versions.shopware }}_${{ matrix.versions.shopware-zip }}_${{ matrix.versions.mysql }}_${{ matrix.versions.php }}_${{ matrix.versions.consentManager }}

@@ -66,7 +66,7 @@ COPY debug_config.php /shopware/config.php.dist
 
 {% if consentManagerRequired %}
     RUN /bin/bash -c "/usr/bin/mysqld_safe --skip-grant-tables &" \
-    && sleep 7 \
+    && sleep 10 \
     && php bin/console sw:plugin:refresh \
     && php bin/console sw:plugin:install SwagCookieConsentManager
 {% endif %}
