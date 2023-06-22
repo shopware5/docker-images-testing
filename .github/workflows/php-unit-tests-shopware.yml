@@ -22,10 +22,6 @@ on:
 
 jobs:
     php-unit-tests-shopware:
-        concurrency:
-            group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-            cancel-in-progress: true
-
         name: Shopware ${{ inputs.shopware-version }} PHP Version ${{ inputs.php-version }}
         runs-on: ubuntu-latest
         env:
