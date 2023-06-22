@@ -9,6 +9,10 @@ on:
 
 jobs:
     php-code-analysis:
+        concurrency:
+            group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+            cancel-in-progress: true
+
         name: Code analysis for ${{ inputs.plugin-name }}
         runs-on: ubuntu-latest
         env:
