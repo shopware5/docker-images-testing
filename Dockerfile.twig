@@ -49,7 +49,7 @@ COPY debug_config.php /shopware/config.php.dist
     RUN composer install
     RUN sed -e "s/%db\.user%/${DB_USER}/g" -e "s/%db\.password%/${DB_PASSWORD}/g" -e "s/%db\.database%/${DB_NAME}/g" -e "s/%db\.host%/${DB_HOST}/g" -e "s/%db\.port%/${DB_PORT}/g" < config.php.dist > config.php
     RUN /bin/bash -c "/usr/bin/mysqld_safe --skip-grant-tables &" \
-    && sleep 5 \
+    && sleep 7 \
     && php bin/console sw:database:setup --steps=drop,create,import,importDemodata \
     && php bin/console sw:cache:clear \
     && php bin/console sw:database:setup --steps=setupShop --shop-url="http://${SW_HOST}${SW_BASE_PATH}" \
@@ -66,7 +66,7 @@ COPY debug_config.php /shopware/config.php.dist
 
 {% if consentManagerRequired %}
     RUN /bin/bash -c "/usr/bin/mysqld_safe --skip-grant-tables &" \
-    && sleep 5 \
+    && sleep 7 \
     && php bin/console sw:plugin:refresh \
     && php bin/console sw:plugin:install SwagCookieConsentManager
 {% endif %}
