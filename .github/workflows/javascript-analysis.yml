@@ -1,0 +1,79 @@
+name: PHPUnit Tests
+
+on:
+    workflow_call:
+        inputs:
+            plugin-name:
+                required: true
+                type: string
+            legacy-plugin:
+                required: false
+                type: boolean
+                default: false
+            # Target can be: Core, Frontend, Backend. Requires legacy-plugin to be true
+            legacy-plugin-target:
+                required: false
+                type: string
+jobs:
+    javascript-code-analysis:
+        name: Code analysis for ${{ inputs.plugin-name }}
+        runs-on: ubuntu-latest
+        env:
+            GH_TOKEN: ${{ github.token }}
+            PLUGIN_NAME: ${{ inputs.plugin-name }}
+            LEGACY_PLUGIN: ${{ inputs.legacy-plugin }}
+            LEGACY_PLUGIN_TARGET: ${{ inputs.legacy-plugin-target }}
+
+        container:
+            image: ghcr.io/shopware5/docker-images-testing/install:shopware_5.7_8.0_7.4_none
+            credentials:
+                username: ${{ github.actor }}
+                password: ${{ secrets.github_token }}
+
+        steps:
+            -   name: Check if plugin is legacy with target
+                run: |
+                    targets="Core Frontend Backend"
+                    if [ ${{ env.LEGACY_PLUGIN }} = true ]; then
+                        if [ ! -z "${{ env.LEGACY_PLUGIN_TARGET }}" ]; then
+                             for target in $targets; do
+                                if [ $target = ${{ env.LEGACY_PLUGIN_TARGET }} ]
+                                then
+                                    echo "Target set!"
+                                    exit 0
+                                fi
+                            done
+                            echo 'Wrong target has been set! Please set the github action input "legacy-plugin-target" to "Core", "Backend", "Frontend"'
+                            exit 1
+                        fi
+
+                        echo 'No target has been set! Please set the github action input "legacy-plugin-target" to "Core", "Backend", "Frontend"'
+                        exit 1
+                    fi
+                    echo "Not a legacy plugin"
+
+            -   name: Move supervisord config
+                run: /usr/bin/supervisord -c /etc/supervisord.conf &
+
+            -   name: Checkout ${{ env.PLUGIN_NAME }}
+                uses: actions/checkout@v3
+                with:
+                    path: plugin
+
+            -   name: Move plugin
+                run: |
+                    if [ ${{ env.LEGACY_PLUGIN }} = true ]; then
+                        mv "$(pwd)/plugin" /shopware/engine/Shopware/Plugins/Local/${{ env.LEGACY_PLUGIN_TARGET }}/${{ env.PLUGIN_NAME }}
+                    else
+                        mv "$(pwd)/plugin" /shopware/custom/plugins/${{ env.PLUGIN_NAME }}
+                    fi
+
+            -   name: Execute javascript code analysis
+                run: |
+                    if [ ${{ env.LEGACY_PLUGIN }} = true ]; then
+                        cd /shopware/engine/Shopware/Plugins/Local/${{ env.LEGACY_PLUGIN_TARGET }}/${{ env.PLUGIN_NAME }}
+                    else
+                        cd /shopware/custom/plugins/${{ env.PLUGIN_NAME }}
+                    fi
+
+                    make check-js-code
