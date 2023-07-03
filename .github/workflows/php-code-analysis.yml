@@ -75,12 +75,13 @@ jobs:
                         cd /shopware/custom/plugins/${{ env.PLUGIN_NAME }}
                     fi
 
+                    echo "plugin-dir=$(pwd)" >> $GITHUB_OUTPUT
                     echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
 
             -   uses: actions/cache@v3
                 with:
                     path: ${{ steps.composer-cache.outputs.dir }}
-                    key: ${{ runner.os }}-composer-${{ hashFiles('./shopware/plugins/${{ env.PLUGIN_NAME }}/composer.lock') }}
+                    key: ${{ runner.os }}-composer-${{ hashFiles('${{ steps.composer-cache.outputs.plugin-dir }}/composer.lock') }}
                     restore-keys: |
                         ${{ runner.os }}-composer-
 
