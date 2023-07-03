@@ -54,16 +54,23 @@ jobs:
               with:
                   path: plugin
 
-            - name: Get Composer Cache Directory
-              id: composer-cache
-              run: |
-                  echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
-            - uses: actions/cache@v3
-              with:
-                  path: ${{ steps.composer-cache.outputs.dir }}
-                  key: ${{ runner.os }}-composer-${{ hashFiles('plugin/composer.lock') }}
-                  restore-keys: |
-                      ${{ runner.os }}-composer-
+            -   name: Get Composer Cache Directory
+                id: composer-cache
+                run: |
+                    if [ ${{ env.LEGACY_PLUGIN }} = true ]; then
+                        cd /shopware/engine/Shopware/Plugins/Local/${{ env.LEGACY_PLUGIN_TARGET }}/${{ env.PLUGIN_NAME }}
+                    else
+                        cd /shopware/custom/plugins/${{ env.PLUGIN_NAME }}
+                    fi
+
+                    echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+            -   uses: actions/cache@v3
+                with:
+                    path: ${{ steps.composer-cache.outputs.dir }}
+                    key: ${{ runner.os }}-composer-${{ hashFiles('./shopware/plugins/${{ env.PLUGIN_NAME }}/composer.lock') }}
+                    restore-keys: |
+                        ${{ runner.os }}-composer-
 
             -   name: Check if plugin is legacy with target
                 run: |
