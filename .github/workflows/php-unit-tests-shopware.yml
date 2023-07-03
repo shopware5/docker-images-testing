@@ -19,6 +19,14 @@ on:
                 required: false
                 type: string
                 default: "none"
+            legacy-plugin:
+                required: false
+                type: boolean
+                default: false
+            # Target can be: Core, Frontend, Backend. Requires legacy-plugin to be true
+            legacy-plugin-target:
+                required: false
+                type: string
 
 jobs:
     php-unit-tests-shopware:
@@ -29,6 +37,9 @@ jobs:
             SHOPWARE_VERSION: ${{ inputs.shopware-version }}
             PHP_VERSION: ${{ inputs.php-version }}
             CONSENT_MANAGER: ${{ inputs.consent-manager }}
+            LEGACY_PLUGIN: ${{ inputs.legacy-plugin }}
+            LEGACY_PLUGIN_TARGET: ${{ inputs.legacy-plugin-target }}
+
         container:
             image: ghcr.io/shopware5/docker-images-testing/install:shopware_${{ inputs.shopware-version }}_${{ inputs.mysql-version }}_${{ inputs.php-version }}_${{ inputs.consent-manager }}
             credentials:
@@ -43,28 +54,73 @@ jobs:
               with:
                   path: plugin
 
-            - name: Get Composer Cache Directory
-              id: composer-cache
-              run: |
-                  echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
-            - uses: actions/cache@v3
-              with:
-                  path: ${{ steps.composer-cache.outputs.dir }}
-                  key: ${{ runner.os }}-composer-${{ hashFiles('plugin/composer.lock') }}
-                  restore-keys: |
-                      ${{ runner.os }}-composer-
+            -   name: Check if plugin is legacy with target
+                run: |
+                    targets="Core Frontend Backend"
+                    if [ ${{ env.LEGACY_PLUGIN }} = true ]; then
+                        if [ ! -z "${{ env.LEGACY_PLUGIN_TARGET }}" ]; then
+                             for target in $targets; do
+                                if [ $target = ${{ env.LEGACY_PLUGIN_TARGET }} ]
+                                then
+                                    echo "Target set!"
+                                    exit 0
+                                fi
+                            done
+                            echo 'Wrong target has been set! Please set the github action input "legacy-plugin-target" to "Core", "Backend", "Frontend"'
+                            exit 1
+                        fi
 
+                        echo 'No target has been set! Please set the github action input "legacy-plugin-target" to "Core", "Backend", "Frontend"'
+                        exit 1
+                    fi
 
             -   name: Move plugin
-                run: mv "$(pwd)/plugin" /shopware/custom/plugins/${{ env.PLUGIN_NAME }}
+                run: |
+                    if [ ${{ env.LEGACY_PLUGIN }} = true ]; then
+                        mv "$(pwd)/plugin" /shopware/engine/Shopware/Plugins/Local/${{ env.LEGACY_PLUGIN_TARGET}}/${{ env.PLUGIN_NAME }}
+                    else
+                        mv "$(pwd)/plugin" /shopware/custom/plugins/${{ env.PLUGIN_NAME }}
+                    fi
+
+            -   name: Get Composer Cache Directory
+                id: composer-cache
+                run: |
+                    if [ ${{ env.LEGACY_PLUGIN }} = true ]; then
+                        cd /shopware/engine/Shopware/Plugins/Local/${{ env.LEGACY_PLUGIN_TARGET }}/${{ env.PLUGIN_NAME }}
+                    else
+                        cd /shopware/custom/plugins/${{ env.PLUGIN_NAME }}
+                    fi
+
+                    echo "plugin-dir=$(pwd)" >> $GITHUB_OUTPUT
+                    echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+            -   uses: actions/cache@v3
+                with:
+                    path: ${{ steps.composer-cache.outputs.dir }}
+                    key: ${{ runner.os }}-composer-${{ hashFiles('${{ steps.composer-cache.outputs.plugin-dir }}/composer.lock') }}
+                    restore-keys: |
+                        ${{ runner.os }}-composer-
 
             -   name: Setup ${{ env.PLUGIN_NAME }}
                 run: |
-                    cd /shopware/custom/plugins/${{ env.PLUGIN_NAME }}
-                    make composer-install
+                    if [ ${{ env.LEGACY_PLUGIN }} = true ]; then
+                        cd /shopware/engine/Shopware/Plugins/Local/${{ env.LEGACY_PLUGIN_TARGET }}/${{ env.PLUGIN_NAME }}
+                    else
+                        cd /shopware/custom/plugins/${{ env.PLUGIN_NAME }}
+                    fi
+
+                    if [ "$(make -p | grep 'composer-install:')" = "composer-install:" ]; then
+                        make composer-install
+                    fi
+
                     make install-plugin
 
             -   name: Execute PHP unit tests
                 run: |
-                    cd /shopware/custom/plugins/${{ env.PLUGIN_NAME }}
+                    if [ ${{ env.LEGACY_PLUGIN }} = true ]; then
+                        cd /shopware/engine/Shopware/Plugins/Local/${{ env.LEGACY_PLUGIN_TARGET }}/${{ env.PLUGIN_NAME }}
+                    else
+                        cd /shopware/custom/plugins/${{ env.PLUGIN_NAME }}
+                    fi
+
                     make run-tests
