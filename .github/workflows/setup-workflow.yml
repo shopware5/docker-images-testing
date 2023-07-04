@@ -16,6 +16,11 @@ on:
                 required: false
                 type: string
                 default: "none"
+
+concurrency:
+    group: ${{ github.ref }}-${{ github.workflow }}
+    cancel-in-progress: true
+
 jobs:
     setup-shopware:
         name: Setup Shopware ${{ inputs.shopware-version }}
