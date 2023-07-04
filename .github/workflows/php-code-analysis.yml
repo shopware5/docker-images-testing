@@ -18,7 +18,7 @@ on:
 jobs:
     php-code-analysis:
         concurrency:
-            group: php_code-analysis-${{ github.head_ref || github.ref }}-${{ github.workflow }}
+            group: php_code-analysis-${{ inputs.plugin-name }}-${{ github.head_ref || github.ref }}-${{ github.workflow }}
             cancel-in-progress: true
 
         name: Code analysis for ${{ inputs.plugin-name }}
