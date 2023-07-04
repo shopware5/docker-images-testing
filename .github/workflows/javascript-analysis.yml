@@ -1,4 +1,4 @@
-name: PHPUnit Tests
+name: Javascript code analysis
 
 on:
     workflow_call:

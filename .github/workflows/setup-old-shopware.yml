@@ -3,10 +3,6 @@ name: Setup older Shopware Version
 on:
     workflow_dispatch:
 
-concurrency:
-    group: ${{ github.ref }}-${{ github.workflow }}
-    cancel-in-progress: true
-
 jobs:
     setup-shopware:
         name: Setup old Shopware
