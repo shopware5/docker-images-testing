@@ -1,4 +1,4 @@
 /running/Dockerfile
 /Dockerfile
 node_modules
-.idea
+.idea/
