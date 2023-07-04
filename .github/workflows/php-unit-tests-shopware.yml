@@ -31,7 +31,7 @@ on:
 jobs:
     php-unit-tests-shopware:
         concurrency:
-            group: ${{ github.head_ref || github.ref }}-${{ github.workflow }}
+            group: php-unit-tests-${{ github.head_ref || github.ref }}-${{ github.workflow }}
             cancel-in-progress: true
 
         name: Shopware ${{ inputs.shopware-version }} PHP Version ${{ inputs.php-version }}
