@@ -114,24 +114,7 @@ jobs:
                     fi
                     make fix-cs-dry
 
-            -   name: Check for PHP-Stan
-                id: phpstan_check
-                run: |
-                    if [ ${{ env.LEGACY_PLUGIN }} = true ]; then
-                        cd /shopware/engine/Shopware/Plugins/Local/${{ env.LEGACY_PLUGIN_TARGET }}/${{ env.PLUGIN_NAME }}
-                    else
-                        cd /shopware/custom/plugins/${{ env.PLUGIN_NAME }}
-                    fi
-
-                    if [ "$(make -p | grep 'phpstan:')" = "phpstan:" ]; then
-                        echo "phpstan_exists=true" >> $GITHUB_OUTPUT
-                    else
-                        echo "No phpstan command found in the Makefile. If the command is declared in the Makefile you have an error!"
-                        echo "phpstan_exists=false" >> $GITHUB_OUTPUT
-                    fi
-
             -   name: Execute PHP-Stan
-                if: ${{ steps.phpstan_check.outputs.phpstan_exists == true }}
                 run: |
                     cd /shopware
                     php bin/console -e production -q # Initialise DIC (var/cache/production____REVISION____) for phpstan
@@ -140,4 +123,9 @@ jobs:
                     else
                         cd /shopware/custom/plugins/${{ env.PLUGIN_NAME }}
                     fi
-                    make phpstan
+
+                    if [ "$(make -p | grep 'phpstan:')" = "phpstan:" ]; then
+                        make phpstan
+                    else
+                        echo "No phpstan command found in the Makefile. If the command is declared in the Makefile you have an error!"
+                    fi
