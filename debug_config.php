@@ -14,7 +14,7 @@ return [
     ],
 
     'logger' => [
-        'level' => 100,
+        'level' => \Shopware\Components\Logger::DEBUG,
     ],
 
     'front' => [
