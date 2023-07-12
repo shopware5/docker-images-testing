@@ -2,6 +2,7 @@ name: Setup older Shopware Version
 
 on:
     workflow_dispatch:
+    push:
 
 jobs:
     setup-shopware:

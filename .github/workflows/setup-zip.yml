@@ -1,5 +1,6 @@
 on:
     workflow_dispatch:
+    push:
 
 jobs:
     setup-shopware:
@@ -40,6 +41,7 @@ jobs:
                 run: make running:shopware_${{ matrix.versions.shopware }}_${{ matrix.versions.mysql }}_${{ matrix.versions.php }}
 
             -   name: Push base image
+                if: ${{ github.ref == 'refs/heads/main' }}
                 run: docker push ghcr.io/shopware5/docker-images-testing/running:shopware_${{ matrix.versions.shopware }}_${{ matrix.versions.mysql }}_${{ matrix.versions.php }}
 
             -   name: Create zip Image
@@ -49,4 +51,5 @@ jobs:
                 run: make test-zip:shopware_${{ matrix.versions.shopware }}_${{ matrix.versions.shopware-zip }}_${{ matrix.versions.mysql }}_${{ matrix.versions.php }}_${{ matrix.versions.consentManager }}
 
             -   name: Push zip Image
+                if: ${{ github.ref == 'refs/heads/main' }}
                 run: docker push ghcr.io/shopware5/docker-images-testing/zip:shopware_${{ matrix.versions.shopware }}_${{ matrix.versions.shopware-zip }}_${{ matrix.versions.mysql }}_${{ matrix.versions.php }}_${{ matrix.versions.consentManager }}

@@ -24,7 +24,7 @@ COPY --from="clone" /shopware /shopware
 WORKDIR /shopware
 
 RUN npm install --prefix ./themes && \
-    npm install --prefix ./themes/Frontend/Responsive && \
+    npm install --prefix ./themes/Frontend/Resposnsive && \
     touch .make.install.npm-dependencies
 
 
@@ -32,6 +32,7 @@ FROM ghcr.io/shopware5/docker-images-testing/running:shopware_{{ shopwareVersion
 
 COPY --from="js-deps" /shopware /shopware
 COPY start-mysql.sh /shopware/start-mysql.sh
+
 
 WORKDIR /shopware
 
@@ -44,9 +45,12 @@ ENV DB_PASSWORD=root
 ENV SW_HOST=localhost
 ENV SW_BASE_PATH=
 
-RUN /bin/bash -c "/usr/bin/mysqld_safe  &" \
-    && ./start-mysql.sh \
-    && mysql -u ${DB_USER} -p${DB_PASSWORD} -e "CREATE DATABASE ${DB_NAME}" \
+
+RUN ./start-mysql.sh \
+&& mysqladmin --user=root password 'root'
+
+RUN  ./start-mysql.sh \
+    && mysql -e "CREATE DATABASE shopware" \
     && php recovery/install/index.php --db-port=${DB_PORT} --db-user=${DB_USER} --db-password=${DB_PASSWORD}  --db-name=${DB_NAME} --shop-name=Demo --shop-host=${SW_HOST} --shop-path=${SW_BASE_PATH} --shop-locale=en_GB  --admin-locale=en_GB --shop-currency=EUR --admin-username=demo --admin-password=demo --admin-name=Demo --admin-email=demo@demo.de --no-interaction
 
 {% if consentManagerRequired %}

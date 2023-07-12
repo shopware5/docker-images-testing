@@ -46,10 +46,15 @@ ENV SW_BASE_PATH=
 
 COPY debug_config.php /shopware/config.php.dist
 
+
+RUN ./start-mysql.sh \
+&& mysqladmin --user=root password 'root'
+
 {% if shopwareVersion < 5.7 %}
     RUN composer install
     RUN sed -e "s/%db\.user%/${DB_USER}/g" -e "s/%db\.password%/${DB_PASSWORD}/g" -e "s/%db\.database%/${DB_NAME}/g" -e "s/%db\.host%/${DB_HOST}/g" -e "s/%db\.port%/${DB_PORT}/g" < config.php.dist > config.php
     RUN ./start-mysql.sh \
+    && mysql -e "CREATE DATABASE shopware" \
     && php bin/console sw:database:setup --steps=drop,create,import,importDemodata \
     && php bin/console sw:cache:clear \
     && php bin/console sw:database:setup --steps=setupShop --shop-url="http://${SW_HOST}${SW_BASE_PATH}" \
@@ -61,7 +66,7 @@ COPY debug_config.php /shopware/config.php.dist
 
     RUN npm install --prefix ./themes && npm install --prefix ./themes/Frontend/Responsive
 {% else %}
-    RUN ./start-mysql.sh && make init && make .make.install.npm-dependencies
+    RUN ./start-mysql.sh && mysql -e "CREATE DATABASE shopware" && make init && make .make.install.npm-dependencies
 {% endif %}
 
 {% if consentManagerRequired %}
