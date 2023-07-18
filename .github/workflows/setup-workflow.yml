@@ -46,6 +46,7 @@ jobs:
                 run: make running:shopware_${{ env.SHOPWARE_VERSION }}_${{ env.MYSQL_VERSION }}_${{ env.PHP_VERSION }}
 
             -   name: Push base image
+                if: ${{ github.ref == 'refs/heads/main' }}
                 run: docker push ghcr.io/shopware5/docker-images-testing/running:shopware_${{ env.SHOPWARE_VERSION }}_${{ env.MYSQL_VERSION }}_${{ env.PHP_VERSION }}
 
             -   name: Create allInOne Image
@@ -55,5 +56,6 @@ jobs:
                 run: make test:shopware_${{ env.SHOPWARE_VERSION }}_${{ env.MYSQL_VERSION }}_${{ env.PHP_VERSION }}_${{ env.CONSENT_MANAGER }}
 
             -   name: Push allInOne Image
+                if: ${{ github.ref == 'refs/heads/main' }}
                 run: docker push ghcr.io/shopware5/docker-images-testing/install:shopware_${{ env.SHOPWARE_VERSION }}_${{ env.MYSQL_VERSION }}_${{ env.PHP_VERSION }}_${{ env.CONSENT_MANAGER }}
 
