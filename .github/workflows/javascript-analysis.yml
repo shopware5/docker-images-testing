@@ -15,12 +15,12 @@ on:
                 required: false
                 type: string
 
-concurrency:
-    group: ${{ github.ref }}-${{ github.workflow }}
-    cancel-in-progress: true
-
 jobs:
     javascript-code-analysis:
+        concurrency:
+            group: js-code-analysis-${{ inputs.plugin-name }}-${{ github.head_ref || github.ref }}-${{ github.workflow }}
+            cancel-in-progress: true
+
         name: Code analysis for ${{ inputs.plugin-name }}
         runs-on: ubuntu-latest
         env:
