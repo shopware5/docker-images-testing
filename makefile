@@ -35,4 +35,5 @@ test\:%:
 test-zip\:%:
 	docker run -d -p 80:80 "ghcr.io/shopware5/docker-images-testing/zip:$*"
 	sleep 15s
-	curl http://localhost | grep "shopware"
+	echo "127.0.0.1  shopware.test" >> /etc/hosts
+	curl http://shopware.test | grep "shopware"

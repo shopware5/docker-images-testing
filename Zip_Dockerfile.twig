@@ -42,12 +42,14 @@ ENV DB_PORT=3306
 ENV DB_NAME=shopware
 ENV DB_HOST=127.0.0.1
 ENV DB_PASSWORD=root
-ENV SW_HOST=localhost
+ENV SW_HOST=shopware.test
 ENV SW_BASE_PATH=
 
 
 RUN ./start-mysql.sh \
 && mysqladmin --user=root password 'root'
+
+RUN echo "127.0.0.1  shopware.test" >> /etc/hosts
 
 RUN  ./start-mysql.sh \
     && mysql -e "CREATE DATABASE shopware" \

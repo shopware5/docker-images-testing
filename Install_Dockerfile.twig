@@ -46,7 +46,6 @@ ENV SW_BASE_PATH=
 
 COPY debug_config.php /shopware/config.php.dist
 
-
 RUN ./start-mysql.sh \
 && mysqladmin --user=root password 'root'
 
