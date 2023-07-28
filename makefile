@@ -20,6 +20,14 @@ zip\:%:
 		-f ./Dockerfile ./
 		--progress=plain
 
+latest\:%:
+	node "twig.js" Latest_Dockerfile.twig "{\"imageName\": \"$@\"}" > Dockerfile
+	docker build --no-cache --progress=plain \
+		-t "ghcr.io/shopware5/docker-images-testing/$@" \
+		-f ./Dockerfile ./
+		--progress=plain
+
+
 install\:%:
 	node "twig.js" Install_Dockerfile.twig "{\"imageName\": \"$@\"}" > Dockerfile
 	docker build \
@@ -36,3 +44,9 @@ test-zip\:%:
 	docker run -d -p 80:80 "ghcr.io/shopware5/docker-images-testing/zip:$*"
 	sleep 15s
 	curl http://localhost | grep "shopware"
+
+test-latest\:%:
+	docker run -d -p 80:80 "ghcr.io/shopware5/docker-images-testing/latest:$*"
+	sleep 15s
+	curl http://localhost | grep "shopware"
+
