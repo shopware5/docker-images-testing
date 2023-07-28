@@ -1,0 +1,66 @@
+on:
+    workflow_dispatch:
+    push:
+    schedule:
+        -   cron:
+                '0 1 * * *'
+
+jobs:
+    setup-shopware:
+        name: Setup Shopware
+        runs-on: ubuntu-latest
+
+        strategy:
+            matrix:
+                versions:
+                    -   shopware: '5.7'
+                        php: '7.4'
+                        mysql: '8.0'
+                        consentManager: 'none'
+
+        steps:
+            -   uses: actions/checkout@v3
+            -   uses: actions/setup-node@v3
+                with:
+                    node-version: current
+
+            -   name: Login to GitHub Container Registry
+                uses: docker/login-action@v2
+                with:
+                    registry: ghcr.io
+                    username: ${{ github.actor }}
+                    password: ${{ github.token }}
+
+            -   name: Install dependencies
+                run: npm install
+
+            -   name: Create base image
+                run: make running:shopware_${{ matrix.versions.shopware }}_${{ matrix.versions.mysql }}_${{ matrix.versions.php }}
+
+            -   name: Push base image
+                if: ${{ github.ref == 'refs/heads/main' }}
+                run: docker push ghcr.io/shopware5/docker-images-testing/running:shopware_${{ matrix.versions.shopware }}_${{ matrix.versions.mysql }}_${{ matrix.versions.php }}
+
+            -   name: Download latest Shopware
+                id: download-artifact
+                uses: dawidd6/action-download-artifact@v2
+                with:
+                    github_token: ${{secrets.GITHUB_TOKEN}}
+                    workflow: create-release.yml
+                    workflow_conclusion: success
+                    branch: 5.7
+                    repo: shopware5/shopware
+
+            -   name: Unzip artifacts
+                run: |
+                    cd artifact && mv install*.zip ../shopware.zip
+
+            -   name: Create lastest Image
+                run: make latest:shopware_${{ matrix.versions.shopware }}_${{ matrix.versions.mysql }}_${{ matrix.versions.php }}_${{ matrix.versions.consentManager }}
+
+            -   name: Test zip Image
+                run: make test-latest:shopware_${{ matrix.versions.shopware }}_${{ matrix.versions.mysql }}_${{ matrix.versions.php }}_${{ matrix.versions.consentManager }}
+
+            -   name: Push zip Image
+                if: ${{ github.ref == 'refs/heads/main' }}
+                run: docker push ghcr.io/shopware5/docker-images-testing/latest:shopware_${{ matrix.versions.shopware }}_${{ matrix.versions.mysql }}_${{ matrix.versions.php }}_${{ matrix.versions.consentManager }}
