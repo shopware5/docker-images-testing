@@ -61,7 +61,7 @@ jobs:
                 run: /usr/bin/supervisord -c /etc/supervisord.conf &
 
             -   name: Checkout ${{ env.PLUGIN_NAME }}
-                uses: actions/checkout@v3
+                uses: actions/checkout@v4
                 with:
                     path: plugin
 

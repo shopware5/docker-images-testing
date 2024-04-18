@@ -27,7 +27,7 @@ jobs:
             PHP_VERSION: ${{ inputs.php-version }}
             CONSENT_MANAGER: ${{ inputs.consent-manager }}
         steps:
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@v4
             -   uses: actions/setup-node@v3
                 with:
                     node-version: current
