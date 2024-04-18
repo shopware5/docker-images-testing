@@ -6,7 +6,7 @@
 
 # Check out shopware source
 FROM alpine/git:latest AS clone
-RUN git clone https://github.com/shopware/shopware.git /shopware --depth=1 --branch={{ shopwareVersion }}
+RUN git clone https://github.com/shopware5/shopware.git /shopware --depth=1 --branch={{ shopwareVersion }}
 RUN cd /shopware && \
 git status && \
 rm -rf .git
