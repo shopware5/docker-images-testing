@@ -62,7 +62,7 @@ RUN usermod -u 1000 www-data
     RUN yes | apt install mariadb-server mariadb-client
 {% endif %}
 
-RUN curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash -
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
 RUN sudo apt-get install -y nodejs
 RUN echo "NODE Version:" && node --version
 RUN echo "NPM Version:" && npm --version
