@@ -33,11 +33,6 @@ jobs:
                         mysql: '8.0'
                         consentManager: 'none'
 
-                    -   shopware: 'v5.7.4'
-                        php: '8.0'
-                        mysql: '8.0'
-                        consentManager: 'none'
-
         uses: ./.github/workflows/setup-workflow.yml
         with:
             mysql-version: ${{ matrix.versions.mysql }}
